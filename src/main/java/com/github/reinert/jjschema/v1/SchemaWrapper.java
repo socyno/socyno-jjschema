@@ -100,6 +100,7 @@ public abstract class SchemaWrapper {
         return false;
     }
 
+    @SuppressWarnings("unchecked")
     public <T extends SchemaWrapper> T cast() {
         return (T) this;
     }
@@ -125,5 +126,9 @@ public abstract class SchemaWrapper {
 
     protected void setType(String type) {
         node.put("type", type);
+    }
+
+    protected void setClassPath() {
+        node.put("classPath", getJavaType().getName());
     }
 }

@@ -54,6 +54,6 @@ public class CustomArraySchemaWrapper extends CustomSchemaWrapper {
     }
 
     protected void setItems(JsonNode itemsNode) {
-        getNode().put("items", itemsNode);
+        getNode().set("items", itemsNode);
     }
 }

@@ -1,6 +1,6 @@
 {
     "type": "object",
-    "classPath":"com.github.reinert.jjschema.v1.SimpleExampleTest$SimpleExample",
+    "classPath":"com.github.reinert.jjschema.v1.SimpleTest$SimpleExample",
     "title": "Example Schema",
     "properties": {
         "firstName": {

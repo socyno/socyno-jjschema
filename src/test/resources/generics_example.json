@@ -1,10 +1,12 @@
 {  
    "type":"object",
+   "classPath":"com.github.reinert.jjschema.v1.GenericsTest$GenericExample",
    "properties":{  
       "listOfTuples":{  
          "type":"array",
          "items":{  
             "type":"object",
+            "classPath":"com.github.reinert.jjschema.v1.GenericsTest$Tuple",
             "properties":{  
                "first":{  
                   "type":"string"
@@ -17,6 +19,7 @@
       },
       "tuple":{  
          "type":"object",
+         "classPath":"com.github.reinert.jjschema.v1.GenericsTest$Tuple",
          "properties":{  
             "first":{  
                "type":"string"

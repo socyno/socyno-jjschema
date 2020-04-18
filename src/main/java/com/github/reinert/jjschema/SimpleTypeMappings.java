@@ -63,9 +63,9 @@ public enum SimpleTypeMappings {
     INSTANT(Instant.class, "string"),
     ZONE_ID(ZoneId.class, "string"),
     OFFSETDATETIME(OffsetDateTime.class, "string");
-
+    
     private static final Map<Class<?>, String> MAPPINGS;
-
+    
     static {
         // Class objects are all singletons, so we can use that
         MAPPINGS = new IdentityHashMap<Class<?>, String>();
@@ -73,15 +73,15 @@ public enum SimpleTypeMappings {
         for (final SimpleTypeMappings mapping : values())
             MAPPINGS.put(mapping.c, mapping.schemaType);
     }
-
+    
     private final Class<?> c;
     private final String schemaType;
-
+    
     SimpleTypeMappings(final Class<?> c, final String schemaType) {
         this.c = c;
         this.schemaType = schemaType;
     }
-
+    
     /**
      * Return a primitive type for a given class, if any
      *
@@ -90,11 +90,11 @@ public enum SimpleTypeMappings {
      */
     public static String forClass(final Type type) {
     	if (!(type instanceof Class)) return null;
-        if (AbstractCollection.class.isAssignableFrom((Class<?>) type))
+        if (AbstractCollection.class.isAssignableFrom((Class<?>) type) || ((Class<?>)type).isArray())
             return "array";
         return MAPPINGS.get(type);
     }
-
+    
     /**
      * Informs which the given type is some Java default type
      *

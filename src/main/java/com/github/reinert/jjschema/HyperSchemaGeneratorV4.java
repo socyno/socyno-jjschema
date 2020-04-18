@@ -282,7 +282,7 @@ public class HyperSchemaGeneratorV4 extends JsonSchemaGenerator {
                     } else {
                         hyperProp.put("type", "string");
                     }
-                    properties.put(prop, hyperProp);
+                    properties.set(prop, hyperProp);
                 }
             } catch (NoSuchFieldException e) {
                 //e.printStackTrace();
@@ -310,7 +310,7 @@ public class HyperSchemaGeneratorV4 extends JsonSchemaGenerator {
                         ParameterizedType genericType = (ParameterizedType) field.getGenericType();
                         Class<?> genericClass = (Class<?>) genericType.getActualTypeArguments()[0];
                         ObjectNode hyperItems = transformJsonToHyperSchema(genericClass, (ObjectNode) items);
-                        jsonSchema.put("items", hyperItems);
+                        jsonSchema.set("items", hyperItems);
                     }
                     hyperSchema = jsonSchema;
                 } else if (jsonSchema.has("properties")) {
@@ -327,7 +327,7 @@ public class HyperSchemaGeneratorV4 extends JsonSchemaGenerator {
     }
 
     @Override
-    protected void processSchemaProperty(ObjectNode schema, Attributes props) {
-        jsonSchemaGenerator.processSchemaProperty(schema, props);
+    protected void processSchemaProperty(ObjectNode schema, Attributes props, Class<?> type, String field) {
+        jsonSchemaGenerator.processSchemaProperty(schema, props, type, field);
     }
 }

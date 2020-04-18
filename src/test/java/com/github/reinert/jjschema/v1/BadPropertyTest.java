@@ -13,7 +13,7 @@ public class BadPropertyTest extends TestCase {
 
     public void testGenerateSchema() {
         ObjectNode expected = MAPPER.createObjectNode();
-        expected.putObject("get").put("type", "number");
+        expected.putObject("x").put("type", "number");
 
         JsonNode schema = schemaFactory.createSchema(BadClass.class);
 
@@ -21,8 +21,9 @@ public class BadPropertyTest extends TestCase {
     }
 
     static class BadClass {
-        public double get() {
-            return 9d;
+    	private double x = 9d;
+        public double getX() {
+            return x;
         }
     }
 }

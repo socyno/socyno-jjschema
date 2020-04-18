@@ -33,14 +33,14 @@ import com.github.reinert.jjschema.v1.SchemaWrapper;
 public class JsonSchemaGeneratorV4 extends JsonSchemaGenerator {
 
     @Override
-    protected void processSchemaProperty(ObjectNode schema, Attributes attributes) {
+    protected void processSchemaProperty(ObjectNode schema, Attributes attributes, Class<?> type, String field) {
         if (!attributes.$ref().isEmpty()) {
             schema.put("$ref", attributes.$ref());
         }
         if (autoPutVersion) {
             schema.put("$schema", SchemaWrapper.DRAFT_04);
         }
-        processCommonAttributes(schema, attributes);
+        processCommonAttributes(schema, attributes, type, field);
 
         if (attributes.required()) {
             schema.put("selfRequired", true);

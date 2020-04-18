@@ -21,7 +21,9 @@ package com.github.reinert.jjschema.v1;
 import static com.github.reinert.jjschema.JJSchemaUtil.processCommonAttributes;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.Map.Entry;
@@ -29,6 +31,7 @@ import java.util.Map.Entry;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.reinert.jjschema.Attributes;
+import com.github.reinert.jjschema.JJSchemaUtil;
 import com.github.reinert.jjschema.ManagedReference;
 
 /**
@@ -60,8 +63,9 @@ public class CustomSchemaWrapper extends SchemaWrapper implements Iterable<Prope
     public CustomSchemaWrapper(Type type, Set<ManagedReference> managedReferences, String relativeId, boolean ignoreProperties) {
         super(type);
         setType("object");
+        setClassPath();
         processNullable();
-        processAttributes(getNode(), type);
+        processAttributes(getNode());
         this.managedReferences = managedReferences;
 
         if (relativeId != null) {
@@ -87,14 +91,14 @@ public class CustomSchemaWrapper extends SchemaWrapper implements Iterable<Prope
         else
             relativeId = relativeId + "/" + token;
     }
-
+    
     public void addProperty(PropertyWrapper propertyWrapper) {
         this.propertyWrappers.add(propertyWrapper);
 
         if (!getNode().has(TAG_PROPERTIES))
             getNode().putObject(TAG_PROPERTIES);
 
-        ((ObjectNode) getNode().get(TAG_PROPERTIES)).put(propertyWrapper.getName(), propertyWrapper.asJson());
+        ((ObjectNode) getNode().get(TAG_PROPERTIES)).set(propertyWrapper.getName(), propertyWrapper.asJson());
 
         if (propertyWrapper.isRequired())
             addRequired(propertyWrapper.getName());
@@ -156,6 +160,30 @@ public class CustomSchemaWrapper extends SchemaWrapper implements Iterable<Prope
         }
 
         Method[] methods = getJavaType().getMethods();
+        Class<? extends CustomAttributesProccessor> parser;
+        if ((parser = JJSchemaUtil.getCustomAttributesParser()) != null) {
+            try {
+                Method[] dynamics = (Method[]) parser.getMethod("getDynamicMthods", Class.class)
+                                    .invoke(null, getJavaType());
+                if (dynamics != null && dynamics.length > 0) {
+                    if (methods.length <= 0) {
+                        methods = dynamics;
+                    } else {
+                        Method[] newMethods = new Method[methods.length + dynamics.length];
+                        for (int idx = 0; idx < methods.length; idx++) {
+                            newMethods[idx] = methods[idx];
+                        }
+                        for (int idx = 0; idx < dynamics.length; idx++) {
+                            newMethods[methods.length + idx] = dynamics[idx];
+                        }
+                        methods = newMethods;
+                    }
+                }
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
+                    | NoSuchMethodException | SecurityException e) {
+                throw new RuntimeException(e);
+            }
+        }
         // Ordering the properties
         Arrays.sort(methods, new Comparator<Method>() {
             @Override
@@ -172,45 +200,41 @@ public class CustomSchemaWrapper extends SchemaWrapper implements Iterable<Prope
                     || Collection.class.isAssignableFrom(declaringClass)) {
                 continue;
             }
-
-            if (isGetter(method)) {
-                boolean hasField = false;
+            String methodField;
+            if ((methodField = getNameFromGetter(method)) != null) {
+//                boolean hasField = false;
                 for (Field field : fields) {
-                    String name = getNameFromGetter(method);
-                    if (field.getName().equalsIgnoreCase(name)) {
+                    if (field.getName().equalsIgnoreCase(methodField)) {
                         props.put(method, field);
-                        hasField = true;
+//                        hasField = true;
                         break;
                     }
                 }
-                if (!hasField) {
-                    props.put(method, null);
-                }
+//                if (!hasField) {
+//                    props.put(method, null);
+//                }
             }
         }
         return props;
     }
-
-    private boolean isGetter(final Method method) {
-        return method.getName().startsWith("get") || method.getName().startsWith("is");
-    }
-
-    private String getNameFromGetter(final Method getter) {
-        String[] getterPrefixes = {"get", "is"};
-        String methodName = getter.getName();
-        String fieldName = null;
-        for (String prefix : getterPrefixes) {
-            if (methodName.startsWith(prefix)) {
-                fieldName = methodName.substring(prefix.length());
-            }
-        }
-
-        if (fieldName == null || "".equals(fieldName)) {
+    
+    /**
+     * check get method (starts with get/is, non static, no parameters)
+     */
+    private String getNameFromGetter(final Method method) {
+        String name = method.getName();
+        if (method.getParameterTypes().length > 0
+                && (method.getModifiers() & Modifier.STATIC) != 0) {
             return null;
         }
-
-        fieldName = fieldName.substring(0, 1).toLowerCase() + fieldName.substring(1);
-        return fieldName;
+        String[] getterPrefixes = {"get", "is"};
+        for (String prefix : getterPrefixes) {
+            if (name.startsWith(prefix) && name.length() > prefix.length()) {
+                String field = name.substring(prefix.length());
+                return field.substring(0, 1).toLowerCase() + field.substring(1);
+            }
+        }
+        return null;
     }
 
     private Field[] concatFieldArrays(Field[] first, Field[] second) {
@@ -228,10 +252,10 @@ public class CustomSchemaWrapper extends SchemaWrapper implements Iterable<Prope
         this.required = required;
     }
 
-    protected void processAttributes(ObjectNode node, Type type) {
+    protected void processAttributes(ObjectNode node) {
         final Attributes attributes = getJavaType().getAnnotation(Attributes.class);
         if (attributes != null) {
-            processCommonAttributes(node, attributes);
+            processCommonAttributes(node, attributes, getJavaType(), null);
             if (attributes.required()) {
                 setRequired(true);
             }

@@ -131,7 +131,7 @@ public abstract class JsonSchemaGenerator {
      * @param schema
      * @param props
      */
-    protected abstract void processSchemaProperty(ObjectNode schema, Attributes props);
+    protected abstract void processSchemaProperty(ObjectNode schema, Attributes props, Class<?> clazz, String field);
 
     protected ObjectNode createInstance() {
         return mapper.createObjectNode();
@@ -254,7 +254,7 @@ public abstract class JsonSchemaGenerator {
         Class<?> genericClass = (Class<?>) genericType.getActualTypeArguments()[0];
         ObjectNode itemsSchema = generateSchema(genericClass);
         itemsSchema.remove("$schema");
-        schema.put("items", itemsSchema);
+        schema.set("items", itemsSchema);
     }
 
     private <T> void processEnum(Class<T> type, ObjectNode schema) {
@@ -294,13 +294,13 @@ public abstract class JsonSchemaGenerator {
         } else {
             genericClass = field.getClass();
         }
-        schema.put("items", generateSchema(genericClass));
+        schema.set("items", generateSchema(genericClass));
     }
 
     protected <T> void processRootAttributes(Class<T> type, ObjectNode schema) {
         Attributes sProp = type.getAnnotation(Attributes.class);
         if (sProp != null)
-            processSchemaProperty(schema, sProp);
+            processSchemaProperty(schema, sProp, type, null);
     }
 
     protected <T> void processProperties(Class<T> type, ObjectNode schema) throws TypeException {
@@ -328,7 +328,8 @@ public abstract class JsonSchemaGenerator {
 
     protected <T> ObjectNode generatePropertySchema(Class<T> type, Method method, Field field) throws TypeException {
         Class<?> returnType = method != null ? method.getReturnType() : field.getType();
-        
+
+        String propertyName = getPropertyName(field, method);
         AccessibleObject propertyReflection = field != null ? field : method;
 
         SchemaIgnore ignoreAnn = propertyReflection.getAnnotation(SchemaIgnore.class);
@@ -341,7 +342,6 @@ public abstract class JsonSchemaGenerator {
         if (refAnn != null) {
             ManagedReference forwardReference;
             Class<?> genericClass;
-            Class<?> collectionClass;
             if (Collection.class.isAssignableFrom(returnType)) {
                 if (method != null) {
                     ParameterizedType genericType = (ParameterizedType) method.getGenericReturnType();
@@ -349,7 +349,6 @@ public abstract class JsonSchemaGenerator {
                 } else {
                     genericClass = field.getClass();
                 }
-                collectionClass = returnType;
             } else {
                 genericClass = returnType;
             }
@@ -372,12 +371,10 @@ public abstract class JsonSchemaGenerator {
         if (backRefAnn != null) {
             ManagedReference backReference;
             Class<?> genericClass;
-            Class<?> collectionClass;
             if (Collection.class.isAssignableFrom(returnType)) {
                 ParameterizedType genericType = (ParameterizedType) method
                         .getGenericReturnType();
                 genericClass = (Class<?>) genericType.getActualTypeArguments()[0];
-                collectionClass = returnType;
             } else {
                 genericClass = returnType;
             }
@@ -405,7 +402,7 @@ public abstract class JsonSchemaGenerator {
         // the JsonSchema object
         Attributes attrs = propertyReflection.getAnnotation(Attributes.class);
         if (attrs != null) {
-            processSchemaProperty(schema, attrs);
+            processSchemaProperty(schema, attrs, type, propertyName);
             // The declaration of $schema is only necessary at the root object
             schema.remove("$schema");
         }

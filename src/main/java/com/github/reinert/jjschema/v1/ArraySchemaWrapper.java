@@ -82,6 +82,6 @@ public class ArraySchemaWrapper extends SchemaWrapper {
     }
 
     protected void setItems(JsonNode itemsNode) {
-        getNode().put("items", itemsNode);
+        getNode().set("items", itemsNode);
     }
 }

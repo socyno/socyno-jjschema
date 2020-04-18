@@ -1,5 +1,6 @@
 {
     "type": "object",
+    "classPath":"com.github.reinert.jjschema.v1.ProductTest$Product",
     "description": "A product from Acme's catalog",
     "title": "Product",
     "properties": {

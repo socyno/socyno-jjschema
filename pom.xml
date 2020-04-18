@@ -2,17 +2,17 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.github.reinert</groupId>
-    <artifactId>jjschema</artifactId>
-    <version>1.17-SNAPSHOT</version>
-    <packaging>bundle</packaging>
-
-    <name>JJSchema</name>
-    <url>http://github.com/reinert/JJSchema/</url>
-
+    <groupId>com.github.socyno</groupId>
+    <artifactId>socyno-jjschema</artifactId>
+    <version>2.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    
+    <name>socyno-jjschema</name>
+    <url>https://github.com/socyno/socyno-jjschema</url>
+    
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <dep.jackson.version>2.9.5</dep.jackson.version>
+        <dep.jackson.version>2.10.3</dep.jackson.version>
     </properties>
 
     <licenses>
@@ -25,36 +25,19 @@
             <url>http://www.apache.org/licenses/LICENSE-2.0</url>
         </license>
     </licenses>
-
-    <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>7</version>
-    </parent>
-
+    
     <scm>
-        <connection>scm:git:ssh://github.com/reinert/JJSchema.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/reinert/JJSchema.git</developerConnection>
-        <url>https://github.com/reinert/JJSchema</url>
+        <connection>scm:git:ssh://github.com/socyno/socyno-jjschema.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/socyno/socyno-jjschema.git</developerConnection>
+        <url>https://github.com/socyno/socyno-jjschema</url>
         <tag>HEAD</tag>
     </scm>
 
     <issueManagement>
-        <url>https://github.com/reinert/JJSchema/issues</url>
+        <url>https://github.com/socyno/socyno-jjschema/issues</url>
         <system>Github Issues</system>
     </issueManagement>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-
+    
     <build>
         <plugins>
             <plugin>
@@ -65,35 +48,7 @@
                     <source>1.8</source>
                     <target>1.8</target>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.7</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <version>2.3.7</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <instructions>          
-                        <Export-Package>com.github.reinert.jjschema.*,
-            			</Export-Package>
-			            <Import-Package>
-			            	com.google.*,
-			            	com.fasterxml.jackson.*,
-			            	javax.ws.rs.*,
-			            </Import-Package>
-                    </instructions>
-                </configuration>
-            </plugin>            
+            </plugin>          
         </plugins>
     </build>
 
@@ -118,8 +73,13 @@
             <artifactId>javax.ws.rs-api</artifactId>
             <version>2.0.1</version>
             <optional>true</optional>
-         </dependency>
-         <dependency>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.16.6</version>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
@@ -146,33 +106,6 @@
                                 <id>attach-sources</id>
                                 <goals>
                                     <goal>jar-no-fork</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.9.1</version>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.5</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
                                 </goals>
                             </execution>
                         </executions>

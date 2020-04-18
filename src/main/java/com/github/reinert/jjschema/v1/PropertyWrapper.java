@@ -21,7 +21,6 @@ package com.github.reinert.jjschema.v1;
 import static com.github.reinert.jjschema.JJSchemaUtil.processCommonAttributes;
 
 import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -148,7 +147,7 @@ public class PropertyWrapper extends SchemaWrapper {
             } else {
                 this.schemaWrapper = createWrapper(managedReferences, propertyType, relativeId1);
             }
-            processAttributes(getNode(), getAccessibleObject());
+            processAttributes(getNode());
             processNullable();
         }
     }
@@ -282,12 +281,12 @@ public class PropertyWrapper extends SchemaWrapper {
         }
         return null;
     }
-
-    protected void processAttributes(ObjectNode node, AccessibleObject accessibleObject) {
-        final Attributes attributes = accessibleObject.getAnnotation(Attributes.class);
-        if (attributes != null) {
+    
+    protected void processAttributes(ObjectNode node) {
+        final Attributes attributes;
+        if ((attributes = getAccessibleObject().getAnnotation(Attributes.class)) != null) {
             node.remove("$schema");
-            processCommonAttributes(node, attributes);
+            processCommonAttributes(node, attributes, getOwnerSchema().getJavaType(), getName());
             if (attributes.required()) {
                 setRequired(true);
             }

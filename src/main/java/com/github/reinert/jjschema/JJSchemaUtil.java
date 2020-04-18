@@ -1,13 +1,72 @@
 package com.github.reinert.jjschema;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.reinert.jjschema.v1.CustomAttributesProccessor;
+import com.github.reinert.jjschema.v1.FieldOption;
+import com.github.reinert.jjschema.v1.FieldType;
+import com.github.reinert.jjschema.v1.FieldType.FieldOptionsType;
+
+import lombok.Data;
 
 public class JJSchemaUtil {
+    
+    private static final ThreadLocal<Class<? extends CustomAttributesProccessor>> 
+                                        CUSTOM_ATTRIBUTES_PARSER = new ThreadLocal<>();
+    
     private JJSchemaUtil() {
     }
-
-    public static void processCommonAttributes(ObjectNode node, Attributes attributes) {
+    
+    public static void setCustomAttributesParser(Class<? extends CustomAttributesProccessor> parser) {
+        CUSTOM_ATTRIBUTES_PARSER.set(parser);
+    }
+    
+    public static Class<? extends CustomAttributesProccessor> getCustomAttributesParser() {
+        return CUSTOM_ATTRIBUTES_PARSER.get();
+    }
+    
+    @Data
+    public static class NamedTypeEntity {
+        private String fieldType;
+        private String fieldTypeKey;
+        private FieldOptionsType optionsType = null;
+        private List<? extends FieldOption> staticOptions;
+    }
+    
+    public static NamedTypeEntity parseTypeAttributes(Attributes attributes) {
+        if (attributes.type() != null) {
+            try {
+                Class<? extends FieldType> type = attributes.type();
+                FieldType instance = (FieldType) type.getMethod("getInstance").invoke(null);
+                if (instance == null || instance.getClass() == FieldType.class) {
+                    return null;
+                }
+                if ( !type.isAssignableFrom(instance.getClass())) {
+                    throw new RuntimeException(String.format(
+                            "The returned value of getInstance is not invalid class type(%s or it's subclass required) .",
+                            type.getName()));
+                }
+                NamedTypeEntity entity = new NamedTypeEntity();
+                entity.setFieldTypeKey(type.getName());
+                entity.setFieldType(instance.getTypeName());
+                entity.setOptionsType(instance.getOptionsType());
+                if (instance.getOptionsType() != null && FieldOptionsType.STATIC.equals(entity.getOptionsType())) {
+                    entity.setStaticOptions(instance.getStaticOptions());
+                }
+                return entity;
+            }  catch (RuntimeException ex) {
+                throw (RuntimeException) ex;
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+        return null;
+    }
+    
+    public static void processCommonAttributes(ObjectNode node, Attributes attributes, Class<?> clazz, String field) {
         if (!attributes.id().isEmpty()) {
             node.put("id", attributes.id());
         }
@@ -23,6 +82,9 @@ public class JJSchemaUtil {
         if (!attributes.title().isEmpty()) {
             node.put("title", attributes.title());
         }
+        if (!attributes.group().isEmpty()) {
+            node.put("group", attributes.group());
+        }
         if (attributes.maximum() != Long.MIN_VALUE) {
             node.put("maximum", attributes.maximum());
         }
@@ -35,16 +97,8 @@ public class JJSchemaUtil {
         if (attributes.exclusiveMinimum()) {
             node.put("exclusiveMinimum", true);
         }
-        if (attributes.enums().length > 0) {
-            ArrayNode enumArray = node.putArray("enum");
-            String[] enums = attributes.enums();
-            for (String v : enums) {
-                if (v.equals("null")) {
-                    enumArray.addNull();
-                } else {
-                    enumArray.add(v);
-                }
-            }
+        if (attributes.position() > 0) {
+            node.put("position", attributes.position());
         }
         if (attributes.uniqueItems()) {
             node.put("uniqueItems", true);
@@ -66,6 +120,53 @@ public class JJSchemaUtil {
         }
         if (attributes.readonly()) {
             node.put("readonly", true);
+        }
+        if (attributes.enums().length > 0) {
+            ArrayNode enumArray = node.putArray("enum");
+            String[] enums = attributes.enums();
+            for (String v : enums) {
+                if (v.equals("null")) {
+                    enumArray.addNull();
+                } else {
+                    enumArray.add(v);
+                }
+            }
+        }
+        NamedTypeEntity namedTypeEntity;
+        if ((namedTypeEntity = parseTypeAttributes(attributes)) != null) {
+            String typeName = namedTypeEntity.getFieldType();
+            if (typeName != null && !typeName.trim().isEmpty()) {
+                node.put("fieldType", typeName);
+                node.put("fieldTypeKey", namedTypeEntity.getFieldTypeKey());
+                node.put("fieldOptionsType", FieldOptionsType.NULL.name());
+                if (namedTypeEntity.getOptionsType() != null) {
+                    node.put("fieldOptionsType", namedTypeEntity.getOptionsType().name());
+                }
+                
+                List<? extends FieldOption> options;
+                if (FieldOptionsType.STATIC.equals(namedTypeEntity.getOptionsType())
+                         && (options = namedTypeEntity.getStaticOptions()) != null
+                         && !options.isEmpty()) {
+                    ArrayNode enumArray = node.putArray("staticOptions");
+                    for (FieldOption option : options) {
+                        ObjectNode jsonOption = node.objectNode()
+                                    .put("value" , option.getOptionValue())
+                                    .put("display", option.getOptionDisplay())
+                                    .put("group", option.getOptionGroup());
+                        enumArray.add(jsonOption);
+                    }
+                }
+            }
+        }
+        Class<? extends CustomAttributesProccessor> parser;
+        if ((parser = getCustomAttributesParser()) != null) {
+            try {
+                parser.getMethod("processCommonAttributes", ObjectNode.class, Attributes.class, 
+                        Class.class, String.class).invoke(null, node, attributes, clazz, field);
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
+                    | NoSuchMethodException | SecurityException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 }

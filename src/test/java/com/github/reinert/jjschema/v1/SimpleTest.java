@@ -50,7 +50,7 @@ public class SimpleTest extends TestCase {
      */
     public void testGenerateSchema() throws UnavailableVersion, JsonProcessingException, IOException {
 
-        final InputStream in = SimpleTest.class.getResourceAsStream("/simple_example.json");
+        final InputStream in = SimpleTest.class.getResourceAsStream("/simple_example2.json");
         if (in == null)
             throw new IOException("resource not found");
         JsonNode fromResource = MAPPER.readTree(in);
