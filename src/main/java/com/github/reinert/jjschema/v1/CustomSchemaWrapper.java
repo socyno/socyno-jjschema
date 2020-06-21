@@ -254,8 +254,8 @@ public class CustomSchemaWrapper extends SchemaWrapper implements Iterable<Prope
 
     protected void processAttributes(ObjectNode node) {
         final Attributes attributes = getJavaType().getAnnotation(Attributes.class);
+        processCommonAttributes(node, attributes, getJavaType(), null);
         if (attributes != null) {
-            processCommonAttributes(node, attributes, getJavaType(), null);
             if (attributes.required()) {
                 setRequired(true);
             }

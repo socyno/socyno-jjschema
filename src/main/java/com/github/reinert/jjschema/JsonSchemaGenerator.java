@@ -299,8 +299,9 @@ public abstract class JsonSchemaGenerator {
 
     protected <T> void processRootAttributes(Class<T> type, ObjectNode schema) {
         Attributes sProp = type.getAnnotation(Attributes.class);
-        if (sProp != null)
+        // if (sProp != null) {
             processSchemaProperty(schema, sProp, type, null);
+        // }
     }
 
     protected <T> void processProperties(Class<T> type, ObjectNode schema) throws TypeException {
@@ -401,11 +402,11 @@ public abstract class JsonSchemaGenerator {
         // method annotations on the other hand, and processSchemaProperty them to
         // the JsonSchema object
         Attributes attrs = propertyReflection.getAnnotation(Attributes.class);
-        if (attrs != null) {
+        // if (attrs != null) {
             processSchemaProperty(schema, attrs, type, propertyName);
             // The declaration of $schema is only necessary at the root object
             schema.remove("$schema");
-        }
+        // }
 
         // Check if the Nullable annotation is present, and if so, add 'null' to type attr
         Nullable nullable = propertyReflection.getAnnotation(Nullable.class);

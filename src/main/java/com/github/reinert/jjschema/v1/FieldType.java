@@ -2,6 +2,8 @@ package com.github.reinert.jjschema.v1;
 
 import java.util.List;
 
+import com.github.reinert.jjschema.SchemaIgnore;
+
 /**
  * 字段的类型及可选项定义。在具体使用中，采用的固定的方式获取实例化对象（即调用 getInstance() 方法），
  * 因此在实现中要求实现类必须 ：1）定义为静态且公开的（public static）； 2）重写并覆盖 getInstance()  静态方法。
@@ -15,17 +17,10 @@ public class FieldType  {
         ;
     };
     
-    private FieldType() {
-        
-    }
-    
-    public static FieldType getInstance() {
-        return new FieldType() ;
-    }
-    
     /**
      * 定义字段类型的名称， 默认值 Simple
      */
+    @SchemaIgnore
     public String getTypeName() {
         return "String";
     }
@@ -33,6 +28,7 @@ public class FieldType  {
     /**
      * 定义字段可选项的类型， 默认值 NULL
      */
+    @SchemaIgnore
     public FieldOptionsType getOptionsType() {
         return FieldOptionsType.NULL;
     }
@@ -45,8 +41,9 @@ public class FieldType  {
      *   
      * </pre>
      */
+    @SchemaIgnore
     public List<? extends FieldOption> getStaticOptions() throws Exception {
-        throw new RuntimeException("Not-Implemented");
+        return null;
     }
     
     /**
@@ -59,20 +56,23 @@ public class FieldType  {
      *        
      * </pre>
      */
-    public <T extends FieldOption> List<T> queryDynamicOptions(FieldOptionsFilter filter) throws Exception {
+    @SchemaIgnore
+    public List<? extends FieldOption> queryDynamicOptions(FieldOptionsFilter filter) throws Exception {
         throw new RuntimeException("Not-Implemented");
     }
     
     /**
      * 定义动态可选项的查询条件定义类，最重要的目的在于动态创建查询条件使用
      */
+    @SchemaIgnore
     public Class<? extends FieldOptionsFilter> getDynamicFilterFormClass() {
-        throw new RuntimeException("Not-Implemented");
+        return null;
     }
     
     /**
      * 动态创建表单模型定义。在一些场景下，字段的值为复杂的结构化对象，且必须人为输入而非可选择时，可以重写该方法返回创建视图模型定义类。
      */
+    @SchemaIgnore
     public Class<?> getListItemCreationFormClass() {
         return null;
     }
@@ -80,6 +80,7 @@ public class FieldType  {
     /**
      * 通过给定的选项值列表，获取选项的完整内容。
      */
+    @SchemaIgnore
     public List<? extends FieldOption> queryDynamicValues(Object[] optionValues) throws Exception {
         throw new RuntimeException("Not-Implemented");
     }

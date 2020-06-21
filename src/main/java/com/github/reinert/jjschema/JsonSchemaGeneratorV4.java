@@ -34,15 +34,14 @@ public class JsonSchemaGeneratorV4 extends JsonSchemaGenerator {
 
     @Override
     protected void processSchemaProperty(ObjectNode schema, Attributes attributes, Class<?> type, String field) {
-        if (!attributes.$ref().isEmpty()) {
+        if (attributes != null && !attributes.$ref().isEmpty()) {
             schema.put("$ref", attributes.$ref());
         }
         if (autoPutVersion) {
             schema.put("$schema", SchemaWrapper.DRAFT_04);
         }
         processCommonAttributes(schema, attributes, type, field);
-
-        if (attributes.required()) {
+        if (attributes != null && attributes.required()) {
             schema.put("selfRequired", true);
         }
     }
