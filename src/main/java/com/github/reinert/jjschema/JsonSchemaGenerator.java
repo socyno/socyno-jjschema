@@ -131,7 +131,7 @@ public abstract class JsonSchemaGenerator {
      * @param schema
      * @param props
      */
-    protected abstract void processSchemaProperty(ObjectNode schema, Attributes props, Class<?> clazz, String field);
+    protected abstract void processSchemaProperty(ObjectNode schema, Attributes props, Class<?> clazz, String field, Method method);
 
     protected ObjectNode createInstance() {
         return mapper.createObjectNode();
@@ -300,7 +300,7 @@ public abstract class JsonSchemaGenerator {
     protected <T> void processRootAttributes(Class<T> type, ObjectNode schema) {
         Attributes sProp = type.getAnnotation(Attributes.class);
         // if (sProp != null) {
-            processSchemaProperty(schema, sProp, type, null);
+            processSchemaProperty(schema, sProp, type, null, null);
         // }
     }
 
@@ -403,7 +403,7 @@ public abstract class JsonSchemaGenerator {
         // the JsonSchema object
         Attributes attrs = propertyReflection.getAnnotation(Attributes.class);
         // if (attrs != null) {
-            processSchemaProperty(schema, attrs, type, propertyName);
+            processSchemaProperty(schema, attrs, type, propertyName, method);
             // The declaration of $schema is only necessary at the root object
             schema.remove("$schema");
         // }

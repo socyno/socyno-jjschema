@@ -20,6 +20,8 @@ package com.github.reinert.jjschema;
 
 import static com.github.reinert.jjschema.JJSchemaUtil.processCommonAttributes;
 
+import java.lang.reflect.Method;
+
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.reinert.jjschema.v1.SchemaWrapper;
 
@@ -33,14 +35,14 @@ import com.github.reinert.jjschema.v1.SchemaWrapper;
 public class JsonSchemaGeneratorV4 extends JsonSchemaGenerator {
 
     @Override
-    protected void processSchemaProperty(ObjectNode schema, Attributes attributes, Class<?> type, String field) {
+    protected void processSchemaProperty(ObjectNode schema, Attributes attributes, Class<?> type, String field, Method method) {
         if (attributes != null && !attributes.$ref().isEmpty()) {
             schema.put("$ref", attributes.$ref());
         }
         if (autoPutVersion) {
             schema.put("$schema", SchemaWrapper.DRAFT_04);
         }
-        processCommonAttributes(schema, attributes, type, field);
+        processCommonAttributes(schema, attributes, type, field, method);
         if (attributes != null && attributes.required()) {
             schema.put("selfRequired", true);
         }

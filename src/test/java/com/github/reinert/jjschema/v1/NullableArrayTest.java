@@ -43,7 +43,7 @@ public class NullableArrayTest extends TestCase {
      * @throws com.fasterxml.jackson.core.JsonProcessingException
      *
      */
-    public void testGenerateSchema() {
+    public void testGenerateSchema() throws Exception {
 
         JsonNode schema = schemaFactory.createSchema(Something.class);
 //        System.out.println(schema);

@@ -48,7 +48,7 @@ public class ProductTest extends TestCase {
      *
      * @throws java.io.IOException
      */
-    public void testProductSchema() throws UnavailableVersion, IOException {
+    public void testProductSchema() throws Exception {
         JsonNode productSchema = schemaFactory.createSchema(Product.class);
         
         String expectedResult = readFile("src/test/resources/product_schema.json", Charset.defaultCharset());

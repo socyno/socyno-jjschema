@@ -49,7 +49,7 @@ public class InterfaceTest extends TestCase {
      * @throws JsonProcessingException
      *
      */
-    public void testGenerateSchema() throws UnavailableVersion, JsonProcessingException, IOException {
+    public void testGenerateSchema() throws UnavailableVersion, JsonProcessingException, Exception {
 
         JsonNode fromJavaType = schemaFactory.createSchema(UserInterface.class);
 //        System.out.println(MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(fromJavaType));

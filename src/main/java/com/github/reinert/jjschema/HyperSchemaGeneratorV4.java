@@ -327,7 +327,7 @@ public class HyperSchemaGeneratorV4 extends JsonSchemaGenerator {
     }
 
     @Override
-    protected void processSchemaProperty(ObjectNode schema, Attributes props, Class<?> type, String field) {
-        jsonSchemaGenerator.processSchemaProperty(schema, props, type, field);
+    protected void processSchemaProperty(ObjectNode schema, Attributes props, Class<?> type, String field, Method method) {
+        jsonSchemaGenerator.processSchemaProperty(schema, props, type, field, method);
     }
 }

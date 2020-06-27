@@ -30,7 +30,7 @@ public class CustomArraySchemaWrapper extends CustomSchemaWrapper {
 
     final SchemaWrapper itemsSchemaWrapper;
 
-    public CustomArraySchemaWrapper(Class<?> type, Class<?> parametrizedType) {
+    public CustomArraySchemaWrapper(Class<?> type, Class<?> parametrizedType) throws Exception  {
         super(type);
         if (parametrizedType != null) {
             if (!Collection.class.isAssignableFrom(type))

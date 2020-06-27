@@ -38,7 +38,7 @@ public class AdditionalPropertiesTest extends TestCase {
         super(testName);
     }
 
-    public void testGenerateSaleItemSchema() throws JsonProcessingException {
+    public void testGenerateSaleItemSchema() throws JsonProcessingException, Exception {
         JsonNode schema = v4generator.createSchema(SaleItem.class);
         // System.out.println(MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(schema));
         JsonNode properties = schema.get("properties");
@@ -46,7 +46,7 @@ public class AdditionalPropertiesTest extends TestCase {
         assertFalse(schema.get("additionalProperties").asBoolean());
     }
 
-    public void testGenerateSaleSchema() throws JsonProcessingException {
+    public void testGenerateSaleSchema() throws JsonProcessingException, Exception {
         JsonNode schema = v4generator.createSchema(Sale.class);
         // System.out.println(MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(schema));
         assertFalse(schema.get("additionalProperties").asBoolean());

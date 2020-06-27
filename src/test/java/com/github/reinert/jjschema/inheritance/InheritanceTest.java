@@ -41,7 +41,7 @@ public class InheritanceTest extends TestCase {
     /**
      *
      */
-    public void testGenerateSchema() throws JsonProcessingException {
+    public void testGenerateSchema() throws JsonProcessingException, Exception {
         JsonNode generatedSchema = schemaFactory.createSchema(MusicItem.class);
 //        System.out.println(WRITER.writeValueAsString(generatedSchema));
 
@@ -49,7 +49,7 @@ public class InheritanceTest extends TestCase {
 //        System.out.println(WRITER.writeValueAsString(generatedSchema));
     }
 
-    public void testInheritedProperties() throws JsonProcessingException {
+    public void testInheritedProperties() throws JsonProcessingException, Exception {
         JsonNode generatedSchema = schemaFactory.createSchema(CollegeStudent.class);
 //        System.out.println(WRITER.writeValueAsString(generatedSchema));
         assertEquals(generatedSchema.get("properties").get("name").get("description").asText(), "student name");

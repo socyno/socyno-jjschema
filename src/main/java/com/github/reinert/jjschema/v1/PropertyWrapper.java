@@ -23,16 +23,17 @@ import static com.github.reinert.jjschema.JJSchemaUtil.processCommonAttributes;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -48,6 +49,7 @@ import com.github.reinert.jjschema.SchemaIgnoreProperties;
 
 public class PropertyWrapper extends SchemaWrapper {
 
+    final static String[] getterPrefixes = {"get", "is"};
 	final static String propertiesStr = "/properties/";
 	final static String itemsStr = "/items";
 
@@ -62,7 +64,7 @@ public class PropertyWrapper extends SchemaWrapper {
     ManagedReference managedReference;
     ReferenceType referenceType;
 
-    public PropertyWrapper(CustomSchemaWrapper ownerSchemaWrapper, Set<ManagedReference> managedReferences, Method method, Field field) {
+    public PropertyWrapper(CustomSchemaWrapper ownerSchemaWrapper, Set<ManagedReference> managedReferences, Method method, Field field) throws Exception {
         super(null);
 
         if (method == null)
@@ -165,8 +167,9 @@ public class PropertyWrapper extends SchemaWrapper {
     }
 
     public String getName() {
-        if (name == null)
-            name = processPropertyName();
+        if (name == null) {
+            name = parsePropertyName(getAccessibleObject());
+        }
         return name;
     }
 
@@ -255,14 +258,15 @@ public class PropertyWrapper extends SchemaWrapper {
     public <T extends SchemaWrapper> T cast() {
         return schemaWrapper.cast();
     }
-
-    protected SchemaWrapper createWrapper(Set<ManagedReference> managedReferences, Type genericType,
-            String relativeId1) {
-        return SchemaWrapperFactory.createWrapper(genericType, managedReferences, relativeId1, shouldIgnoreProperties());
+    
+    protected SchemaWrapper createWrapper(Set<ManagedReference> managedReferences, Type genericType, String relativeId1)
+            throws Exception {
+        return SchemaWrapperFactory.createWrapper(genericType, managedReferences, relativeId1,
+                shouldIgnoreProperties());
     }
-
+    
     protected SchemaWrapper createArrayWrapper(Set<ManagedReference> managedReferences, Type propertyType,
-            Class<?> collectionType, String relativeId1) {
+            Class<?> collectionType, String relativeId1) throws Exception {
         return SchemaWrapperFactory.createArrayWrapper(collectionType, propertyType, managedReferences, relativeId1, shouldIgnoreProperties());
     }
 
@@ -271,6 +275,10 @@ public class PropertyWrapper extends SchemaWrapper {
     }
 
     protected AccessibleObject getAccessibleObject() {
+        return getAccessibleObject(method, field);
+    }
+
+    public static AccessibleObject getAccessibleObject(Method method, Field field) {
         return (field == null) ? method : field;
     }
 
@@ -285,7 +293,7 @@ public class PropertyWrapper extends SchemaWrapper {
     protected void processAttributes(ObjectNode node) {
         node.remove("$schema");
         final Attributes attributes = getAccessibleObject().getAnnotation(Attributes.class);
-        processCommonAttributes(node, attributes, getOwnerSchema().getJavaType(), getName());
+        processCommonAttributes(node, attributes, getOwnerSchema().getJavaType(), getName(), method);
         if (attributes != null) {
             if (attributes.required()) {
                 setRequired(true);
@@ -342,28 +350,65 @@ public class PropertyWrapper extends SchemaWrapper {
         schemaWrapper.setType(type);
     }
 
-    private String processPropertyName() {
-        if (field != null) {
-
-            if (field.isAnnotationPresent(JsonProperty.class)) {
-                return field.getAnnotation(JsonProperty.class).value();
-            }
-
-            return field.getName();
-        }
-
-        if ("get".equals(method.getName())) return "get";
-
-        return firstToLowerCase(method.getName().replace("get", ""));
-    }
-
-    private String firstToLowerCase(String string) {
+    public static String firstToLowerCase(String string) {
         return Character.toLowerCase(string.charAt(0))
                 + (string.length() > 1 ? string.substring(1) : "");
     }
 
+    public static String parsePropertyName(AccessibleObject field) {
+        if (field == null) {
+            return null;
+        }
+        if (field.getAnnotation(SchemaIgnore.class) != null) {
+            return null;
+        }
+        if (Method.class.isAssignableFrom(field.getClass())) {
+            Method method = (Method)field;
+            String name = method.getName();
+            Class<?> declaringClass = method.getDeclaringClass();
+            if (declaringClass.equals(Object.class)
+                    || Map.class.isAssignableFrom(declaringClass)
+                    || Collection.class.isAssignableFrom(declaringClass)) {
+                return null;
+            }
+            if (name == null || method.getParameterTypes().length != 0
+                    || (method.getModifiers() & Modifier.STATIC) != 0) {
+                return null;
+            }
+            for (String prefix : getterPrefixes) {
+                if (prefix.equals(name)) {
+                    return prefix;
+                }
+                if (name.startsWith(prefix)) {
+                    return firstToLowerCase(name.replace(prefix, "")).trim();
+                }
+            }
+            return null;
+        } else if (Field.class.isAssignableFrom(field.getClass())) {
+            Field method = (Field) field;
+            String name = method.getName();
+            Class<?> declaringClass = method.getDeclaringClass();
+            if (declaringClass.equals(Object.class) || Map.class.isAssignableFrom(declaringClass)
+                    || Collection.class.isAssignableFrom(declaringClass)) {
+                return null;
+            }
+            int modifiers = method.getModifiers();
+            if (name == null || method.isSynthetic() || Modifier.isStatic(modifiers)
+                    || Modifier.isTransient(modifiers)) {
+                return null;
+            }
+            return name.trim();
+        }
+        return null;
+    }
+    
+    public static boolean shouldIgnoreField(AccessibleObject field) {
+        String name = parsePropertyName(field);
+        return name == null || name.isEmpty();
+    }
+    
     protected boolean shouldIgnoreField() {
-        return getAccessibleObject().getAnnotation(SchemaIgnore.class) != null;
+        return shouldIgnoreField(getAccessibleObject());
     }
 
     protected boolean shouldIgnoreProperties() {

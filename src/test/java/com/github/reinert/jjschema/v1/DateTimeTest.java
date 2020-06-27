@@ -42,7 +42,7 @@ public class DateTimeTest extends TestCase {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public void testGenerateSchema() throws UnavailableVersion, JsonProcessingException, IOException {
+    public void testGenerateSchema() throws UnavailableVersion, JsonProcessingException, Exception {
         JsonNode fromJavaType = schemaFactory.createSchema(DateTime.class);
 //        System.out.println(MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(fromJavaType));
         String str = MAPPER.writeValueAsString(fromJavaType);

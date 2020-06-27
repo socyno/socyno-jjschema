@@ -48,7 +48,7 @@ public class SimpleExampleTest extends TestCase {
      * @throws com.fasterxml.jackson.core.JsonProcessingException
      *
      */
-    public void testGenerateSchema() throws UnavailableVersion, JsonProcessingException, IOException {
+    public void testGenerateSchema() throws UnavailableVersion, JsonProcessingException, Exception {
 
         final InputStream in = SimpleExampleTest.class.getResourceAsStream("/simple_example.json");
         if (in == null)

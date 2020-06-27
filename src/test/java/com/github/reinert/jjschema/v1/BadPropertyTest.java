@@ -11,7 +11,7 @@ public class BadPropertyTest extends TestCase {
     static ObjectMapper MAPPER = new ObjectMapper();
     JsonSchemaFactory schemaFactory = new JsonSchemaV4Factory();
 
-    public void testGenerateSchema() {
+    public void testGenerateSchema() throws Exception {
         ObjectNode expected = MAPPER.createObjectNode();
         expected.putObject("x").put("type", "number");
 

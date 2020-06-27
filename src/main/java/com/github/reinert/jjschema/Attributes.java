@@ -39,9 +39,7 @@ public @interface Attributes {
     
     String title() default "";
     
-    int position() default -1;
-    
-    String group() default "";
+    int position() default 0;
     
     Class<? extends FieldType> type() default FieldType.class;
     

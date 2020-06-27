@@ -7,11 +7,11 @@ import com.github.reinert.jjschema.Attributes;
 
 public class CustomAttributesProccessor {
     
-    public static Method[] getDynamicMthods(Class<?> clazz) {
+    public static Method[] getDynamicMethods(Class<?> clazz) {
         return null;
     }
     
-    public static void processCommonAttributes(ObjectNode node, Attributes attributes, Class<?> clazz, String field) {
+    public static void processCommonAttributes(ObjectNode node, Attributes attributes, Class<?> clazz, String field, Method method) {
         
     }
 }

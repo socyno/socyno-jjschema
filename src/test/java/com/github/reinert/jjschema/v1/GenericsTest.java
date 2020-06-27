@@ -32,7 +32,7 @@ public class GenericsTest  extends TestCase {
      * @throws JsonProcessingException
      * @throws IOException
      */
-    public void testGenerateSchema() throws UnavailableVersion, JsonProcessingException, IOException {
+    public void testGenerateSchema() throws Exception {
 
         final InputStream in = SimpleExampleTest.class.getResourceAsStream("/generics_example.json");
         if (in == null)

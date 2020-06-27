@@ -24,7 +24,7 @@ public abstract class JsonSchemaFactory {
 
     private boolean autoPutDollarSchema;
 
-    public abstract JsonNode createSchema(Class<?> type);
+    public abstract JsonNode createSchema(Class<?> type) throws Exception;
 
     public boolean isAutoPutDollarSchema() {
         return autoPutDollarSchema;

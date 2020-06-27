@@ -33,7 +33,7 @@ public class ArraySchemaWrapper extends SchemaWrapper {
 
     final SchemaWrapper itemsSchemaWrapper;
 
-    public ArraySchemaWrapper(Class<?> type, Type propertyType, Set<ManagedReference> managedReferences, String relativeId, boolean ignoreProperties) {
+    public ArraySchemaWrapper(Class<?> type, Type propertyType, Set<ManagedReference> managedReferences, String relativeId, boolean ignoreProperties) throws Exception {
         super(type);
         setType("array");
         if (propertyType != null) {
@@ -49,11 +49,11 @@ public class ArraySchemaWrapper extends SchemaWrapper {
         }
     }
 
-    public ArraySchemaWrapper(Class<?> type, Class<?> parametrizedType, Set<ManagedReference> managedReferences, boolean ignoreProperties) {
+    public ArraySchemaWrapper(Class<?> type, Class<?> parametrizedType, Set<ManagedReference> managedReferences, boolean ignoreProperties) throws Exception {
         this(type, parametrizedType, managedReferences, null, ignoreProperties);
     }
 
-    public ArraySchemaWrapper(Class<?> type, Class<?> parametrizedType, boolean ignoreProperties) {
+    public ArraySchemaWrapper(Class<?> type, Class<?> parametrizedType, boolean ignoreProperties) throws Exception {
         this(type, parametrizedType, null, ignoreProperties);
     }
 

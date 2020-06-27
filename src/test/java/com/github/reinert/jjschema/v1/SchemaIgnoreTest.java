@@ -44,7 +44,7 @@ public class SchemaIgnoreTest extends TestCase {
     /**
      * Test if @SchemaIgnore works correctly
      */
-    public void testGenerateSchema() {
+    public void testGenerateSchema() throws Exception {
 
         JsonNode schema = v4generator.createSchema(Sale.class);
         //System.out.println(MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(schema));

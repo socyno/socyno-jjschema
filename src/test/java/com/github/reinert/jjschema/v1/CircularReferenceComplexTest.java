@@ -46,7 +46,7 @@ public class CircularReferenceComplexTest extends TestCase {
      *
      * @throws java.io.IOException
      */
-    public void testGenerateSchema() throws IOException {
+    public void testGenerateSchema() throws Exception {
 
         JsonNode taskSchema = schemaFactory.createSchema(Task.class);
 //        System.out.println(WRITER.writeValueAsString(taskSchema));

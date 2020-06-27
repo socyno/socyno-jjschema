@@ -21,9 +21,7 @@ package com.github.reinert.jjschema.v1;
 import static com.github.reinert.jjschema.JJSchemaUtil.processCommonAttributes;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.Map.Entry;
@@ -48,19 +46,19 @@ public class CustomSchemaWrapper extends SchemaWrapper implements Iterable<Prope
     private final Set<ManagedReference> managedReferences;
     private String relativeId = "#";
 
-    public CustomSchemaWrapper(Type type) {
+    public CustomSchemaWrapper(Type type) throws Exception {
         this(type, false);
     }
 
-    public CustomSchemaWrapper(Type type, boolean ignoreProperties) {
+    public CustomSchemaWrapper(Type type, boolean ignoreProperties) throws Exception {
         this(type, new HashSet<ManagedReference>(), null, ignoreProperties);
     }
 
-    public CustomSchemaWrapper(Type type, Set<ManagedReference> managedReferences, boolean ignoreProperties) {
+    public CustomSchemaWrapper(Type type, Set<ManagedReference> managedReferences, boolean ignoreProperties) throws Exception {
         this(type, managedReferences, null, ignoreProperties);
     }
 
-    public CustomSchemaWrapper(Type type, Set<ManagedReference> managedReferences, String relativeId, boolean ignoreProperties) {
+    public CustomSchemaWrapper(Type type, Set<ManagedReference> managedReferences, String relativeId, boolean ignoreProperties) throws Exception {
         super(type);
         setType("object");
         setClassPath();
@@ -140,9 +138,9 @@ public class CustomSchemaWrapper extends SchemaWrapper implements Iterable<Prope
     public Iterator<PropertyWrapper> iterator() {
         return propertyWrappers != null ? propertyWrappers.iterator() : Collections.<PropertyWrapper>emptyIterator();
     }
-
-    protected void processProperties() {
-        HashMap<Method, Field> properties = findProperties();
+    
+    protected void processProperties() throws Exception {
+        Map<Method, Field> properties = findProperties(getJavaType());
         for (Entry<Method, Field> prop : properties.entrySet()) {
             PropertyWrapper propertyWrapper = new PropertyWrapper(this, managedReferences, 
                     prop.getKey(), prop.getValue());
@@ -151,94 +149,68 @@ public class CustomSchemaWrapper extends SchemaWrapper implements Iterable<Prope
         }
     }
 
-    private HashMap<Method, Field> findProperties() {
+    public static Map<Method, Field> findProperties(Class<?> clazz) throws Exception {
         Field[] fields = new Field[0];
-        Class<?> javaType = getJavaType();
-        while(javaType.getSuperclass() != null) {
-            fields = concatFieldArrays(fields, javaType.getDeclaredFields());
-            javaType = javaType.getSuperclass();
+        Class<?> currentType = clazz;
+        while(currentType.getSuperclass() != null) {
+            fields = concatFieldArrays(fields, currentType.getDeclaredFields());
+            currentType = currentType.getSuperclass();
         }
 
-        Method[] methods = getJavaType().getMethods();
+        Method[] methods = clazz.getMethods();
         Class<? extends CustomAttributesProccessor> parser;
         if ((parser = JJSchemaUtil.getCustomAttributesParser()) != null) {
-            try {
-                Method[] dynamics = (Method[]) parser.getMethod("getDynamicMthods", Class.class)
-                                    .invoke(null, getJavaType());
-                if (dynamics != null && dynamics.length > 0) {
-                    if (methods.length <= 0) {
-                        methods = dynamics;
-                    } else {
-                        Method[] newMethods = new Method[methods.length + dynamics.length];
-                        for (int idx = 0; idx < methods.length; idx++) {
-                            newMethods[idx] = methods[idx];
-                        }
-                        for (int idx = 0; idx < dynamics.length; idx++) {
-                            newMethods[methods.length + idx] = dynamics[idx];
-                        }
-                        methods = newMethods;
-                    }
-                }
-            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
-                    | NoSuchMethodException | SecurityException e) {
-                throw new RuntimeException(e);
+            Method[] dynamics = (Method[]) parser.getMethod("getDynamicMethods", Class.class)
+                                .invoke(null, clazz);
+            if (dynamics != null && dynamics.length > 0) {
+                methods = concatMethodArrays(methods, dynamics);
             }
         }
-        // Ordering the properties
-        Arrays.sort(methods, new Comparator<Method>() {
-            @Override
-            public int compare(Method m1, Method m2) {
-                return m1.getName().compareTo(m2.getName());
-            }
-        });
-
-        LinkedHashMap<Method, Field> props = new LinkedHashMap<Method, Field>();
-        // get valid properties (get method and respective field (if exists))
-        for (Method method : methods) {
-            Class<?> declaringClass = method.getDeclaringClass();
-            if (declaringClass.equals(Object.class)
-                    || Collection.class.isAssignableFrom(declaringClass)) {
+        Method tmpMethod;
+        Map<String, Method> propMethods = new HashMap<>();
+        for (int idx = 0; idx < methods.length; idx++) {
+            String propname;
+            if ((propname = PropertyWrapper.parsePropertyName((tmpMethod = methods[idx]))) == null
+                    || propname.isEmpty() || propMethods.containsKey(propname)) {
                 continue;
             }
-            String methodField;
-            if ((methodField = getNameFromGetter(method)) != null) {
-//                boolean hasField = false;
-                for (Field field : fields) {
-                    if (field.getName().equalsIgnoreCase(methodField)) {
-                        props.put(method, field);
-//                        hasField = true;
-                        break;
-                    }
+            propMethods.put(propname, tmpMethod);
+        }
+        String[] propnames = propMethods.keySet().toArray(new String[0]);
+        Arrays.parallelSort(propnames, new Comparator<String> () {
+            @Override
+            public int compare(String l, String r) {
+                return l.compareTo(r);
+            }
+        });
+        Map<Method, Field> props = new LinkedHashMap<Method, Field>();
+        for (String prop : propnames) {
+            boolean hasField = false;
+            Method method = propMethods.get(prop);
+            for (Field field : fields) {
+                if (field.getName().equals(prop)
+                        && field.getType().equals(method.getReturnType())) {
+                    props.put(method, field);
+                    hasField = true;
+                    break;
                 }
-//                if (!hasField) {
-//                    props.put(method, null);
-//                }
+            }
+            if (!hasField) {
+                props.put(method, null);
             }
         }
         return props;
     }
     
-    /**
-     * check get method (starts with get/is, non static, no parameters)
-     */
-    private String getNameFromGetter(final Method method) {
-        String name = method.getName();
-        if (method.getParameterTypes().length > 0
-                && (method.getModifiers() & Modifier.STATIC) != 0) {
-            return null;
-        }
-        String[] getterPrefixes = {"get", "is"};
-        for (String prefix : getterPrefixes) {
-            if (name.startsWith(prefix) && name.length() > prefix.length()) {
-                String field = name.substring(prefix.length());
-                return field.substring(0, 1).toLowerCase() + field.substring(1);
-            }
-        }
-        return null;
-    }
-
-    private Field[] concatFieldArrays(Field[] first, Field[] second) {
+    private static Field[] concatFieldArrays(Field[] first, Field[] second) {
         Field[] result = new Field[first.length + second.length];
+        System.arraycopy(first, 0, result, 0, first.length);
+        System.arraycopy(second, 0, result, first.length, second.length);
+        return result;
+    }
+    
+    private static Method[] concatMethodArrays(Method[] first, Method[] second) {
+        Method[] result = new Method[first.length + second.length];
         System.arraycopy(first, 0, result, 0, first.length);
         System.arraycopy(second, 0, result, first.length, second.length);
         return result;
@@ -254,7 +226,7 @@ public class CustomSchemaWrapper extends SchemaWrapper implements Iterable<Prope
 
     protected void processAttributes(ObjectNode node) {
         final Attributes attributes = getJavaType().getAnnotation(Attributes.class);
-        processCommonAttributes(node, attributes, getJavaType(), null);
+        processCommonAttributes(node, attributes, getJavaType(), null, null);
         if (attributes != null) {
             if (attributes.required()) {
                 setRequired(true);

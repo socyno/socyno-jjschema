@@ -20,7 +20,6 @@ package com.github.reinert.jjschema.v1;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.reinert.jjschema.Attributes;
@@ -43,7 +42,7 @@ public class CircularReferenceSimpleTest extends TestCase {
     /**
      * Test if @JsonManagedReference and @JsonBackReference works at a Simple Circular Reference case
      */
-    public void testGenerateSchema() throws JsonProcessingException {
+    public void testGenerateSchema() throws Exception {
 
         JsonNode schema = schemaFactory.createSchema(Sale.class);
 //        System.out.println(MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(schema));

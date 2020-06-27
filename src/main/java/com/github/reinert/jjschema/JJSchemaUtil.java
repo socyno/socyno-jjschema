@@ -1,6 +1,7 @@
 package com.github.reinert.jjschema;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
@@ -72,7 +73,7 @@ public class JJSchemaUtil {
         return null;
     }
     
-    public static void processCommonAttributes(ObjectNode node, Attributes attributes, Class<?> clazz, String field) {
+    public static void processCommonAttributes(ObjectNode node, Attributes attributes, Class<?> clazz, String field, Method method) {
         if (attributes != null) {
             if (!attributes.id().isEmpty()) {
                 node.put("id", attributes.id());
@@ -89,9 +90,6 @@ public class JJSchemaUtil {
             if (!attributes.title().isEmpty()) {
                 node.put("title", attributes.title());
             }
-            if (!attributes.group().isEmpty()) {
-                node.put("group", attributes.group());
-            }
             if (attributes.maximum() != Long.MIN_VALUE) {
                 node.put("maximum", attributes.maximum());
             }
@@ -104,7 +102,7 @@ public class JJSchemaUtil {
             if (attributes.exclusiveMinimum()) {
                 node.put("exclusiveMinimum", true);
             }
-            if (attributes.position() > 0) {
+            if (attributes.position() != 0) {
                 node.put("position", attributes.position());
             }
             if (attributes.uniqueItems()) {
@@ -173,7 +171,7 @@ public class JJSchemaUtil {
         if ((parser = getCustomAttributesParser()) != null) {
             try {
                 parser.getMethod("processCommonAttributes", ObjectNode.class, Attributes.class, 
-                        Class.class, String.class).invoke(null, node, attributes, clazz, field);
+                        Class.class, String.class, Method.class).invoke(null, node, attributes, clazz, field, method);
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
                     | NoSuchMethodException | SecurityException e) {
                 throw new RuntimeException(e);

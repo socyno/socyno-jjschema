@@ -32,7 +32,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class JsonSchemaV4Factory extends JsonSchemaFactory {
 
     @Override
-    public JsonNode createSchema(Class<?> type) {
+    public JsonNode createSchema(Class<?> type) throws Exception {
         SchemaWrapper schemaWrapper = SchemaWrapperFactory.createWrapper(type);
         if (isAutoPutDollarSchema())
             schemaWrapper.putDollarSchema();

@@ -24,8 +24,6 @@ import com.github.reinert.jjschema.Attributes;
 import com.github.reinert.jjschema.Nullable;
 import junit.framework.TestCase;
 
-import java.io.IOException;
-
 /**
  * @author reinert
  */
@@ -44,7 +42,7 @@ public class EnumTest extends TestCase {
      * @throws com.fasterxml.jackson.core.JsonProcessingException
      *
      */
-    public void testGenerateSchema() throws IOException {
+    public void testGenerateSchema() throws Exception {
 
         JsonNode schema = schemaFactory.createSchema(Hyperthing.class);
         System.out.println(schema);

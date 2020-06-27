@@ -18,7 +18,6 @@
 
 package com.github.reinert.jjschema.v1;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.reinert.jjschema.SchemaIgnoreProperties;
@@ -40,7 +39,7 @@ public class SchemaIgnorePropertiesTest extends TestCase {
     /**
      * Test if @SchemaIgnore works correctly
      */
-    public void testGenerateSchema() throws JsonProcessingException {
+    public void testGenerateSchema() throws Exception {
 
         JsonNode schema = v4generator.createSchema(ItemWrapper.class);
 //        System.out.println(MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(schema));
