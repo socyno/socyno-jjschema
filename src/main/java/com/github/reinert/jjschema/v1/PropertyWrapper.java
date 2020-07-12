@@ -294,11 +294,10 @@ public class PropertyWrapper extends SchemaWrapper {
         node.remove("$schema");
         final Attributes attributes = getAccessibleObject().getAnnotation(Attributes.class);
         processCommonAttributes(node, attributes, getOwnerSchema().getJavaType(), getName(), method);
-        if (attributes != null) {
-            if (attributes.required()) {
-                setRequired(true);
-            }
+        if (node.get("required") != null && node.get("required").isBoolean() && node.get("required").asBoolean()) {
+            setRequired(true);
         }
+        node.remove("required");
     }
 
     protected void processReference(Type propertyType) {
@@ -380,7 +379,7 @@ public class PropertyWrapper extends SchemaWrapper {
                     return prefix;
                 }
                 if (name.startsWith(prefix)) {
-                    return firstToLowerCase(name.replace(prefix, "")).trim();
+                    return firstToLowerCase(name.substring(prefix.length()));
                 }
             }
             return null;

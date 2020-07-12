@@ -126,6 +126,9 @@ public class JJSchemaUtil {
             if (attributes.readonly()) {
                 node.put("readonly", true);
             }
+            if (attributes.required()) {
+                node.put("required", true);
+            }
             if (attributes.enums().length > 0) {
                 ArrayNode enumArray = node.putArray("enum");
                 String[] enums = attributes.enums();
