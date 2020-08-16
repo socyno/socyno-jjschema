@@ -33,7 +33,7 @@ public class CustomArraySchemaWrapper extends CustomSchemaWrapper {
     public CustomArraySchemaWrapper(Class<?> type, Class<?> parametrizedType) throws Exception  {
         super(type);
         if (parametrizedType != null) {
-            if (!Collection.class.isAssignableFrom(type))
+            if (!Collection.class.isAssignableFrom(type) && !type.isArray())
                 throw new RuntimeException("Cannot instantiate a SchemaWrapper of a non Collection class with a Parametrized Type.");
             this.itemsSchemaWrapper = SchemaWrapperFactory.createWrapper(parametrizedType);
         } else {

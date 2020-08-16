@@ -75,10 +75,9 @@ public class PropertyWrapper extends SchemaWrapper {
         this.method = method;
 
         String relativeId;
-
+        Class<?> collectionType = null;
         Type genericType = method.getGenericReturnType();
         Type propertyType = method.getReturnType();
-        Class<?> collectionType = null;
 
         if (genericType instanceof TypeVariable) {
         	ParameterizedType p = ownerSchemaWrapper.getParameterizedType();
@@ -88,17 +87,20 @@ public class PropertyWrapper extends SchemaWrapper {
         	}
         }
         
-        if (Collection.class.isAssignableFrom((Class<?>) propertyType)) {
-            collectionType = method.getReturnType();
-            if (!(genericType instanceof ParameterizedType)) {
-            	genericType = collectionType.getGenericSuperclass();
-                while (!(genericType instanceof ParameterizedType) ) {                    
-                	genericType = ((Class<?>) genericType).getGenericSuperclass();
+        if (Collection.class.isAssignableFrom((Class<?>) propertyType)
+                 || ((Class<?>) propertyType).isArray()) {
+            collectionType = (Class<?>)propertyType;
+            if (Collection.class.isAssignableFrom((Class<?>) propertyType)) {
+                if (!(genericType instanceof ParameterizedType)) {
+                    genericType = ((Class<?>) propertyType).getGenericSuperclass();
+                    while (!(genericType instanceof ParameterizedType)) {
+                        genericType = ((Class<?>) genericType).getGenericSuperclass();
+                    }
                 }
+                propertyType = ((ParameterizedType) genericType).getActualTypeArguments()[0];
+            } else {
+                propertyType = ((Class<?>) propertyType).getComponentType();
             }
-        	propertyType =  ((ParameterizedType) genericType).getActualTypeArguments()[0];
-            
-
             relativeId = propertiesStr + getName() + itemsStr;
         } else {
             relativeId = propertiesStr + getName();

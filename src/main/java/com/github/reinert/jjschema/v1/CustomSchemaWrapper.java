@@ -149,6 +149,11 @@ public class CustomSchemaWrapper extends SchemaWrapper implements Iterable<Prope
         }
     }
 
+    public static class MethodField extends LinkedHashMap<Method, Field> {
+        private static final long serialVersionUID = 1L;
+
+    }
+
     public static Map<Method, Field> findProperties(Class<?> clazz) throws Exception {
         Field[] fields = new Field[0];
         Class<?> currentType = clazz;
@@ -183,7 +188,7 @@ public class CustomSchemaWrapper extends SchemaWrapper implements Iterable<Prope
                 return l.compareTo(r);
             }
         });
-        Map<Method, Field> props = new LinkedHashMap<Method, Field>();
+        MethodField props = new MethodField();
         for (String prop : propnames) {
             boolean hasField = false;
             Method method = propMethods.get(prop);
@@ -198,6 +203,11 @@ public class CustomSchemaWrapper extends SchemaWrapper implements Iterable<Prope
             if (!hasField) {
                 props.put(method, null);
             }
+        }
+
+        if (parser != null) {
+            parser.getMethod("filterDynamicMethods", Class.class, MethodField.class)
+                    .invoke(null, clazz, props);
         }
         return props;
     }

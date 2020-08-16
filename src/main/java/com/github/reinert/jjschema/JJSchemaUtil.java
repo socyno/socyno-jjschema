@@ -126,7 +126,7 @@ public class JJSchemaUtil {
             if (attributes.readonly()) {
                 node.put("readonly", true);
             }
-            if (attributes.required()) {
+            if (attributes.required() && method != null) {
                 node.put("required", true);
             }
             if (attributes.enums().length > 0) {

@@ -1,9 +1,9 @@
 package com.github.reinert.jjschema.v1;
 
-import java.lang.reflect.Method;
-
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.reinert.jjschema.Attributes;
+
+import java.lang.reflect.Method;
 
 public class CustomAttributesProccessor {
     
@@ -13,5 +13,9 @@ public class CustomAttributesProccessor {
     
     public static void processCommonAttributes(ObjectNode node, Attributes attributes, Class<?> clazz, String field, Method method) {
         
+    }
+
+    public static void filterDynamicMethods(Class<?> clazz, CustomSchemaWrapper.MethodField methodField){
+
     }
 }

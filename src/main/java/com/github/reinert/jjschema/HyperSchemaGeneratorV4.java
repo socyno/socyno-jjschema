@@ -303,7 +303,7 @@ public class HyperSchemaGeneratorV4 extends JsonSchemaGenerator {
             ObjectNode jsonSchema = (ObjectNode) jsonSchemaGenerator.generateSchema(type);
             if (jsonSchema != null) {
                 if ("array".equals(jsonSchema.get("type").asText())) {
-                    if (!Collection.class.isAssignableFrom(type)) {
+                    if (!Collection.class.isAssignableFrom(type) && !type.isArray()) {
                         ObjectNode items = (ObjectNode) jsonSchema.get("items");
                         // NOTE: Customized Iterable Class must declare the Collection object at first
                         Field field = type.getDeclaredFields()[0];

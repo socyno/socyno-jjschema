@@ -76,4 +76,17 @@ public @interface Attributes {
     boolean readonly() default false;
     
     boolean additionalProperties() default true;
+
+    String [] visibleTags() default {};
+
+    String [] requiredTags() default {};
+
+    String [] editableTags() default {};
+
+    String [] visibleSelector() default {};
+
+    String [] requiredSelector() default {};
+
+    String [] editableSelector() default {};
+
 }

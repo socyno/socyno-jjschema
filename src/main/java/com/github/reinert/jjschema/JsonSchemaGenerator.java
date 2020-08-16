@@ -185,6 +185,9 @@ public abstract class JsonSchemaGenerator {
                 || Collection.class.isAssignableFrom(type)) {
             checkAndProcessCollection(type, schema);
         }
+        else if (type.isArray()) {
+            checkAndProcessStandardArray(type, schema);
+        }
         // If it is void then return null
         else if (type == Void.class || type == void.class) {
             schema = null;
@@ -244,6 +247,20 @@ public abstract class JsonSchemaGenerator {
             // the intended Collection as the first field
             processCustomCollection(type, schema);
         }
+    }
+    
+    /**
+     * Generates the schema of array
+     *
+     * @param type
+     * @param schema
+     */
+    private <T> void checkAndProcessStandardArray(Class<T> type, ObjectNode schema) throws TypeException {
+        schema.put(TAG_TYPE, TAG_ARRAY);
+        processRootAttributes(type, schema);
+        ObjectNode itemsSchema = generateSchema(type.getComponentType());
+        itemsSchema.remove("$schema");
+        schema.set("items", itemsSchema);
     }
 
     private <T> void processCustomCollection(Class<T> type, ObjectNode schema) throws TypeException {
@@ -390,8 +407,7 @@ public abstract class JsonSchemaGenerator {
                 return null;
             }
         }
-
-
+        
         if (Collection.class.isAssignableFrom(returnType)) {
             processPropertyCollection(method, field, schema);
         } else {

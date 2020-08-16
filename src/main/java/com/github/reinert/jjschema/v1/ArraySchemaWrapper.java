@@ -37,7 +37,7 @@ public class ArraySchemaWrapper extends SchemaWrapper {
         super(type);
         setType("array");
         if (propertyType != null) {
-            if (!Collection.class.isAssignableFrom(type))
+            if (!Collection.class.isAssignableFrom(type) && !type.isArray())
                 throw new RuntimeException("Cannot instantiate a SchemaWrapper of a non Collection class with a Parametrized Type.");
             if (managedReferences == null)
                 this.itemsSchemaWrapper = SchemaWrapperFactory.createWrapper(propertyType);
