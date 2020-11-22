@@ -296,7 +296,7 @@ public class PropertyWrapper extends SchemaWrapper {
         node.remove("$schema");
         final Attributes attributes = getAccessibleObject().getAnnotation(Attributes.class);
         processCommonAttributes(node, attributes, getOwnerSchema().getJavaType(), getName(), method);
-        if (node.get("required") != null && node.get("required").isBoolean() && node.get("required").asBoolean()) {
+        if (node != null && (node.get("required") != null && node.get("required").isBoolean() && node.get("required").asBoolean())) {
             setRequired(true);
         }
         node.remove("required");

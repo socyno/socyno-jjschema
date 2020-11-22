@@ -21,6 +21,7 @@ package com.github.reinert.jjschema.v1;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.reinert.jjschema.Attributes;
+import com.github.reinert.jjschema.exception.UnavailableVersion;
 
 import junit.framework.TestCase;
 
